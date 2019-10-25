@@ -1,9 +1,16 @@
-const express = require('express')
-const router = express.Router()
+var express = require('express')
+var router = express.Router()
 
-const usuario = require('../controllers/usuario')
+const grupo = require('../controllers/grupo')
 
-router.post("/", usuario.save)
-router.post("/login", usuario.login)
+router.get('/', function(req, res, next) {
+  res.send('<h1>respond with a resource</h1>');
+});
+
+router.post('/grupo', grupo.save)
+router.get('/grupo', grupo.getAll)
+router.delete('/grupo', grupo.salir)
+router.put('/grupo', grupo.unirse)
+router.post('/jugar', grupo.iniciar)
 
 module.exports = router

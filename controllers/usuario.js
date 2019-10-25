@@ -35,6 +35,22 @@ module.exports = {
         }
     },
 
+    saveAdmin: async function (req, res, next) {
+        try {
+            const usu = new usuario({
+                nombreCompleto: req.body.nombreCompleto,
+                email: req.body.email,
+                contrasena: req.body.contrasena,
+                admin: true
+            })
+            const result = await usu.save()
+            res.status(200).json({ usuario: result })
+        } catch (e) {
+            console.log(e)
+            next(e)
+        }
+    },
+
     login: async function (req, res, next) {
         try {
             const usu = await usuario.findOne({ email: req.body.email });
@@ -59,14 +75,15 @@ module.exports = {
         try {
             var usus = await usuario.find()
             res.status(200).json({ usuarios: usus });
-        } catch (err) {
-            next(err);
+        } catch (e) {
+            console.log(e)
+            next(e)
         }
     },
 
     update: async function (req, res, next) {
         try {
-            const usu = await usuario.findOneAndUpdate({ email: req.body.email }, {
+            const usu = await usuario.findOneAndUpdate({ email: req.params.email }, {
                 $set: {
                     nombreCompleto: req.body.nombreCompleto,
                     admin: req.body.admin,

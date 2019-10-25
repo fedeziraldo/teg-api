@@ -3,18 +3,18 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var jwt = require('jsonwebtoken');
+var jwt = require('jsonwebtoken')
 require('dotenv').config()
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var usuario = require('./routes/usuario')
-var usuario = require('./routes/admin')
+var login = require('./routes/login')
+var admin = require('./routes/admin')
 
 var app = express();
 
 //Definicion de secretKey
-app.set('secretKey', process.env.SECRET_KEY) 
+app.set('secretKey', process.env.SECRET_KEY)
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,8 +27,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/usuario', usuario)
+app.use('/usuario', validate, usuario)
+app.use('/login', login)
 app.use('/admin', validate, admin)
 
 function validate(req, res, next) {
@@ -40,17 +40,16 @@ function validate(req, res, next) {
       req.body.userId = decoded.id
       next()
     }
-  });
-
+  })
 }
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
