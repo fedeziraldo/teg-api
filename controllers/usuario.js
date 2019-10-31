@@ -1,11 +1,11 @@
 const usuario = require("../model/usuario")
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const conectados = require('./conectados');
 
-async function usuarioRoot() {
+(async  () => {
     try {
-        if (await usuario.findOne({ email: "root" })) return
-        const usu = await new usuario({
+        const usu = new usuario({
             nombreCompleto: "root",
             email: "root",
             contrasena: "root",
@@ -16,8 +16,7 @@ async function usuarioRoot() {
     } catch (e) {
         console.log(e)
     }
-}
-usuarioRoot()
+})()
 
 module.exports = {
     save: async function (req, res, next) {
@@ -53,14 +52,15 @@ module.exports = {
 
     login: async function (req, res, next) {
         try {
-            const usu = await usuario.findOne({ email: req.body.email });
+            const usu = await usuario.findOne({ email: req.body.email })
             if (usu) {
                 if (bcrypt.compareSync(req.body.contrasena, usu.contrasena)) {
-                    const token = jwt.sign({ id: usu._id }, req.app.get('secretKey'), { expiresIn: '1h' });
+                    const token = jwt.sign({ id: usu._id }, req.app.get('secretKey'), { expiresIn: '1h' })
                     console.log(token, usu)
-                    res.status(200).json({ status: "success", message: "user found!!!", data: { user: usu, token: token } });
+                    conectados.conectar(usu)
+                    res.status(200).json({ status: "success", message: "user found!!!", data: { user: usu, token: token } })
                 } else {
-                    res.status(400).json({ status: "error", message: "Invalid user/password!!!", data: null });
+                    res.status(400).json({ status: "error", message: "Invalid user/password!!!", data: null })
                 }
             } else {
                 res.status(400).json({ status: "not_found", message: "user not found!!!", data: null })
@@ -71,10 +71,29 @@ module.exports = {
         }
     },
 
+    logout: async function (req, res, next) {
+        try {
+            conectados.desconectar(req.body.userId)
+        } catch (e) {
+            console.log(e)
+            next(e)
+        }
+    },
+
+    getConectados: async function (req, res, next) {
+        try {
+            var usus = conectados.jugadores()
+            res.status(200).json({ usuarios: usus })
+        } catch (e) {
+            console.log(e)
+            next(e)
+        }
+    },
+
     getAll: async function (req, res, next) {
         try {
             var usus = await usuario.find()
-            res.status(200).json({ usuarios: usus });
+            res.status(200).json({ usuarios: usus })
         } catch (e) {
             console.log(e)
             next(e)
@@ -96,6 +115,8 @@ module.exports = {
             next(e)
         }
     },
+
+    
 
     get: async function (req, res, next) {
         try {
