@@ -1,12 +1,12 @@
 const grupos = {}
-const jugadores = {}
+const conectados = require("./conectados")
 
 module.exports = {
     save: async function (req, res, next) {
         try {
-            if (grupos[req.body.userId]) return
-            grupos[req.body.userId] = {nombre: req.body.userId, jugadores: [req.body.userId]}
-            jugadores[req.body.userId] = req.body.userId
+            if (conectados[req.body.userId].grupo) throw("ya esta asignado a algun grupo")
+            grupos[req.body.userId] = {nombre: req.body.userId, jugadores: [conectados[req.body.userId]]}
+            conectados[req.body.userId].grupo = req.body.userId
             res.status(200).json( grupos )
         } catch (e) {
             console.log(e)
@@ -25,9 +25,9 @@ module.exports = {
 
     unirse: async function (req, res, next) {
         try {
-            if (!grupos[req.params.nombre]) return
-            grupos[req.params.nombre].jugadores.add(req.body.userId)
-            jugadores[req.body.userId] = req.params.nombre
+            if (conectados[req.body.userId].grupo) throw("ya esta asignado a algun grupo")
+            grupos[req.params.grupo].jugadores.add(conectados[req.body.userId])
+            conectados[req.body.userId] = req.params.grupo
             res.status(200).json( grupos )
         } catch (e) {
             console.log(e)
@@ -36,10 +36,17 @@ module.exports = {
     },
 
     salir: async function (req, res, next) {
-        try {            
-            delete jugadores[req.body.userId]
-            grupos[jugadores[req.body.userId]].jugadores.splice(req.body.userId, 1)
-            delete grupos[req.body.userId]
+        try {
+            if (grupos[req.body.userId].nombre == null) throw ("no puede salir")
+            if (grupos[req.body.userId].nombre == conectados[req.body.userId].grupo){
+                delete grupos[req.body.userId]
+                for (let jugador of grupos[req.body.userId].jugadores) {
+                    jugador.grupo = null
+                }
+            } else {
+                grupos[req.body.userId].jugadores.splice(conectados[req.body.userId], 1)
+                conectados[req.body.userId].grupo = null
+            }
             res.status(200).json( grupos )
         } catch (e) {
             console.log(e)
@@ -49,7 +56,7 @@ module.exports = {
 
     iniciar: async function (req, res, next) {
         try {
-            if (!jugadores[req.body.userId] == req.body.userId) return
+            if (grupos[req.body.userId] == null) throw("no tiene grupo")
             res.status(200).json( "iniciando" )
         } catch (e) {
             console.log(e)
