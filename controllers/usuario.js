@@ -27,7 +27,7 @@ module.exports = {
                 contrasena: req.body.contrasena,
             })
             const result = await usu.save()
-            res.status(200).json({ usuario: result })
+            res.status(200).json({status: "success", usuario: result })
         } catch (e) {
             console.log(e)
             next(e)
@@ -43,7 +43,7 @@ module.exports = {
                 admin: true
             })
             const result = await usu.save()
-            res.status(200).json({ usuario: result })
+            res.status(200).json({  usuario: result })
         } catch (e) {
             console.log(e)
             next(e)
