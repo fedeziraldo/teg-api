@@ -2,7 +2,7 @@ class Sala {
 
     constructor (userId){
         this.userId = userId
-        this.integrantes = []
+        this.integrantes = [userId]
     }
 }
 
