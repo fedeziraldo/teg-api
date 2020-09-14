@@ -23,6 +23,15 @@ const iniciar = (server) => {
                 for (let sala of salas) {
                     sala.integrantes = sala.integrantes.filter(integrante => integrante != conexion.userId)
                 }
+                const sala = salas.find(sala => sala.userId == conexion.userId)
+                if (sala) {
+                    for (let integrante in sala.integrantes) {
+                        const conIntegrante = conexiones.find(con => con.userId == integrante)
+                        if (conIntegrante) {
+                            conIntegrante.socket.leave(conexion.userId)
+                        }
+                    }
+                }
                 salas = salas.filter(sala => sala.userId != conexion.userId)
                 io.emit("salas", salas)
             }
@@ -49,7 +58,15 @@ const iniciar = (server) => {
                 conexiones = conexiones.filter(con => con.socket != socket)
                 for (let sala of salas) {
                     sala.integrantes = sala.integrantes.filter(integrante => integrante != conexion.userId)
-                    socket.leave(sala.userId)
+                }
+                const sala = salas.find(sala => sala.userId == conexion.userId)
+                if (sala) {
+                    for (let integrante in sala.integrantes) {
+                        const conIntegrante = conexiones.find(con => con.userId == integrante)
+                        if (conIntegrante) {
+                            conIntegrante.socket.leave(conexion.userId)
+                        }
+                    }
                 }
                 socket.leave("sin sala")
                 salas = salas.filter(sala => sala.userId != conexion.userId)
@@ -94,7 +111,15 @@ const iniciar = (server) => {
             if (conexion) {
                 for (let sala of salas) {
                     sala.integrantes = sala.integrantes.filter(integrante => integrante != conexion.userId)
-                    socket.leave(sala.userId)
+                }
+                const sala = salas.find(sala => sala.userId == conexion.userId)
+                if (sala) {
+                    for (let integrante in sala.integrantes) {
+                        const conIntegrante = conexiones.find(con => con.userId == integrante)
+                        if (conIntegrante) {
+                            conIntegrante.socket.leave(conexion.userId)
+                        }
+                    }
                 }
                 salas = salas.filter(sala => sala.userId != conexion.userId)
                 socket.join("sin sala")

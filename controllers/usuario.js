@@ -14,7 +14,7 @@ const conectados = require('./conectados');
         })
         console.log(await usu.save())
     } catch (e) {
-        console.log(e)
+        //console.log(e)
     }
 })()
 
