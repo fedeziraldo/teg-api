@@ -42,6 +42,7 @@ const iniciar = (server) => {
                 if (err) {
                     console.error(err)
                 } else {
+
                     console.log("New client connected", decoded.id);
                     const usu = await usuario.findById(decoded.id)
                     conexiones.push(new Conexion(token, socket, decoded.id, usu))
@@ -86,7 +87,9 @@ const iniciar = (server) => {
             if (conexion) {
                 const usu = await usuario.findById(conexion.userId)
                 const sala = new Sala(conexion.userId, usu)
+                console.log('crear sala',sala)
                 salas.push(sala)
+                console.log('crear salas',salas)
                 socket.leave("sin sala")
                 socket.join(conexion.userId)
                 socket.sala = conexion.userId
@@ -95,18 +98,25 @@ const iniciar = (server) => {
                 io.emit("salas", salas)
             }
         });
-        socket.on("unirseASala", userIdSala => {
+        socket.on("unirseASala",async (userIdSala) => {
             const conexion = conexiones.find(con => con.socket == socket)
             if (conexion) {
                 const sala = salas.find(sala => sala.userId == userIdSala)
                 if (sala) {
-                    sala.integrantes.push(conexion.userId)
+                    const UsuExist=sala.integrantes.find(int=>int.con==conexion)
+                    if(UsuExist){
+                        socket.emit('error',{msg:'El jugador ya es esta en la sala'})
+                    }else{
+                    const usu = await usuario.findById(conexion.userId)
+                    sala.integrantes.push({con:conexion.userId,alias:usu.email})
+                    console.log(sala.integrantes)
                     socket.leave("sin sala")
                     socket.join(sala.userId)
                     socket.sala = sala.userId
                     socket.emit("chat", `${mensajeUnidoASala} ${conexion.userId}`)
                     socket.emit("sala", sala)
                     io.emit("salas", salas)
+                    }
                 }
             }
         });
