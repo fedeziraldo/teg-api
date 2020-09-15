@@ -1,7 +1,8 @@
 class Sala {
 
-    constructor (userId){
+    constructor (userId, usuario){
         this.userId = userId
+        this.usuario = usuario
         this.integrantes = [userId]
     }
 }

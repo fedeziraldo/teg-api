@@ -3,6 +3,7 @@ const socketIo = require("socket.io")
 
 const Conexion = require('../Sala/Conexion')
 const Sala = require('../Sala/Sala')
+const usuario = require("../model/usuario")
 let io
 
 let salas = []
@@ -37,12 +38,14 @@ const iniciar = (server) => {
             }
         });
         socket.on("conectar", token => {
-            jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+            jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
                 if (err) {
                     console.error(err)
                 } else {
                     console.log("New client connected", decoded.id);
-                    conexiones.push(new Conexion(token, socket, decoded.id))
+                    const usu = await usuario.findById(decoded.id)
+                    conexiones.push(new Conexion(token, socket, decoded.id, usu))
+                    socket.emit("usuario", usu)
                     socket.emit("salas", salas)
                     socket.join("sin sala")
                     socket.sala = "sin sala"
@@ -78,10 +81,11 @@ const iniciar = (server) => {
             console.log(msj);
             io.to(socket.sala).emit("chat", msj)
         });
-        socket.on("crearSala", () => {
+        socket.on("crearSala", async () => {
             const conexion = conexiones.find(con => con.socket == socket)
             if (conexion) {
-                const sala = new Sala(conexion.userId)
+                const usu = await usuario.findById(conexion.userId)
+                const sala = new Sala(conexion.userId, usu)
                 salas.push(sala)
                 socket.leave("sin sala")
                 socket.join(conexion.userId)
