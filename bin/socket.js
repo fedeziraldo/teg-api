@@ -10,7 +10,7 @@ let salas = []
 let conexiones = []
 
 const mensajeUnidoASala = `Te has unido a la sala `
-
+const mensajeError='El jugador ya es esta en la sala'
 const iniciar = (server) => {
     io = socketIo(server);
 
@@ -98,16 +98,18 @@ const iniciar = (server) => {
                 io.emit("salas", salas)
             }
         });
-        socket.on("unirseASala",async (userIdSala) => {
+        socket.on("unirseASala", (userIdSala) => {
             const conexion = conexiones.find(con => con.socket == socket)
             if (conexion) {
                 const sala = salas.find(sala => sala.userId == userIdSala)
                 if (sala) {
-                    const UsuExist=sala.integrantes.find(int=>int.con==conexion)
+                    const UsuExist=sala.integrantes.find(int=>int.con==conexion.userId)
+
+                    console.log('integrantes',sala.integrante)
                     if(UsuExist){
-                        socket.emit('error',{msg:'El jugador ya es esta en la sala'})
+                        io.emit("error",`${mensajeError}`)
                     }else{
-                    const usu = await usuario.findById(conexion.userId)
+                    // const usu = await usuario.findById(conexion.userId)
                     sala.integrantes.push({con:conexion.userId,alias:usu.email})
                     console.log(sala.integrantes)
                     socket.leave("sin sala")
