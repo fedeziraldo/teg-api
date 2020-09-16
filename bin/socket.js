@@ -41,6 +41,7 @@ const iniciar = (server) => {
             jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
                 if (err) {
                     console.error(err)
+                    socket.emit("errorConexion")
                 } else {
                     console.log("New client connected", decoded.id);
                     const usu = await usuario.findById(decoded.id)
