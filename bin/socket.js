@@ -4,6 +4,7 @@ const socketIo = require("socket.io")
 const Conexion = require('../Sala/Conexion')
 const Sala = require('../Sala/Sala')
 const usuario = require("../model/usuario")
+const juego = require("./juego")
 let io
 
 /**
@@ -142,14 +143,22 @@ const iniciar = (server) => {
             const conexion = conexiones.find(con => con.socket == socket)
             if (conexion) {
                 filtrarSalasALSalir(conexion)
+                io.emit("salas", salas)
+                io.to(sala.userId).emit("sala", 'sin sala')
                 socket.leave(socket.sala)
                 socket.join("sin sala")
                 socket.sala = "sin sala"
                 socket.emit("chat", `${mensajeUnidoASala} Sin sala`)
-                socket.emit("sala", 'sin sala')
-                io.emit("salas", salas)
             }
         });
+
+        socket.on("iniciarJuego", () => {
+            const conexion = conexiones.find(con => con.socket == socket)
+            salas = salas.filter(sala => sala.userId != conexion.userId)
+        });
+        
+
+        juego(socket)
     });
 }
 
